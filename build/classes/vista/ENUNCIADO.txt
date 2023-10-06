@@ -1,0 +1,9 @@
+Con randomaccessfiles
+1º--------------------------------------------------------------
+- al modificar, si no existe, se sugiere crear
+
+hacer versión avanzada
+--num matricula
+--nombre cien caracters
+--fecha n acimiento
+--nota
