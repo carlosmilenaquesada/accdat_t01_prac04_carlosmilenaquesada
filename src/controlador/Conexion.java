@@ -7,15 +7,16 @@ import javax.swing.JOptionPane;
 
 public class Conexion {
 
-    private final String PATH_FICHERO = "";
-    private File file = null;
+    private String pathFichero;
     private RandomAccessFile raf = null;
 
-    public Conexion() {
-        this.file = new File(PATH_FICHERO);
-        if (this.file.exists() && this.file.isFile()) {
+    private Conexion(){}
+    
+    public Conexion(String pathFichero) {
+        File file = new File(pathFichero);
+        if (file.exists() && file.isFile()) {
             try {
-                raf = new RandomAccessFile(this.file, "rw");
+                this.raf = new RandomAccessFile(file, "rw");
             } catch (FileNotFoundException ex) {
                 JOptionPane.showMessageDialog(null, "Archivo no encontrado.");
             } catch (SecurityException ex) {

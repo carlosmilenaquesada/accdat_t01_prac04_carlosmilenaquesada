@@ -1,22 +1,31 @@
 package vista;
 
+import controlador.Crud;
 import java.awt.Color;
 import java.time.DateTimeException;
 import java.time.LocalDate;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import modelo.Alumno;
 
 public class PrincipalJFrame extends javax.swing.JFrame {
 
-    final String regexMatricula = "^[1-9]\\d{0,8}$";//Solo permite números enteros positivos de 9 dígitos o menos
-    final String regexNombre = "^.{0,100}$";//Solo permite cadenas de texto de una longitud de entre 0 y 100 caracteres.
-    final String regexFecha = "\\d{4}-\\d{2}-\\d{2}";//Solo permite fechas con formato yyyy-mm-dd
-    final String regexNota = "^(10(\\.0{1,2})?|[0-9](\\.\\d{1,2})?)$";//Solo permite números del 0 al 10 enteros o no más de 2 decimales
+    //Constantes
+    private static final String REGEX_MATRICULA = "^[1-9]\\d{0,8}$";//Solo permite números enteros positivos de 9 dígitos o menos
+    private static final String REGEX_NOMBRE = "^.{0,100}$";//Solo permite cadenas de texto de una longitud de entre 0 y 100 caracteres.
+    private static final String REGEX_FECHA = "\\d{4}-\\d{2}-\\d{2}";//Solo permite fechas con formato yyyy-mm-dd
+    private static final String REGEX_NOTA = "^(10(\\.0{1,2})?|[0-9](\\.\\d{1,2})?)$";//Solo permite números del 0 al 10 enteros o no más de 2 decimales
 
-    final Color colorError = Color.RED;
-    final Color colorPorDefecto = Color.WHITE;
+    private static final Color COLOR_ERROR = Color.RED;
+    private static final Color COLOR_POR_DEFECTO = Color.WHITE;
+
+    //CRUD
+    private Crud crud = null;
 
     public PrincipalJFrame() {
+        initMenuInicial();
         initComponents();
     }
 
@@ -285,54 +294,77 @@ public class PrincipalJFrame extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void initMenuInicial() {
+        int eleccion = JOptionPane.showOptionDialog(null, "¿Qué desea hacer?", "Menú inicio Base de Datos",
+                JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null,
+                new Object[]{"Abrir Base de Datos existente", "Crear nueva Base de Datos", "Salir del programa"},
+                "Abrir Base de Datos existente");
+
+        if (eleccion == 2 || eleccion == -1) {
+            System.exit(0);
+        }
+
+        JFileChooser jfc = new JFileChooser();
+        jfc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        jfc.setAcceptAllFileFilterUsed(false);
+        jfc.setFileFilter(new FileNameExtensionFilter("Compatibles Random Access File (*.txt; *.text; *.dat)", "txt", "text", "dat"));
+
+        if (eleccion == 0/*Abrir Base de Datos existente*/) {
+            jfc.showOpenDialog(null);
+        } else {
+            if (eleccion == 1/*Crear nueva Base de Datos*/) {
+                jfc.showSaveDialog(null);
+            }
+        }
+    }
 
     private void jButtonAltaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonAltaActionPerformed
         Alumno alumno = new Alumno();
         StringBuilder mensaje = new StringBuilder();
-        if (jTextFieldAltaMatricula.getText().matches(regexMatricula)) {
-            jTextFieldAltaMatricula.setBackground(colorPorDefecto);
+        if (jTextFieldAltaMatricula.getText().matches(REGEX_MATRICULA)) {
+            jTextFieldAltaMatricula.setBackground(COLOR_POR_DEFECTO);
             alumno.setNumMatricula(Integer.parseInt(jTextFieldAltaMatricula.getText()));
         } else {
-            jTextFieldAltaMatricula.setBackground(colorError);
+            jTextFieldAltaMatricula.setBackground(COLOR_ERROR);
             mensaje.append("\t- El número de matrícula debe ser un número entero de no más de 9 dígitos.\n");
         }
 
-        if (jTextFieldAltaNombre.getText().matches(regexNombre)) {
-            jTextFieldAltaNombre.setBackground(colorPorDefecto);
+        if (jTextFieldAltaNombre.getText().matches(REGEX_NOMBRE)) {
+            jTextFieldAltaNombre.setBackground(COLOR_POR_DEFECTO);
             alumno.setNombre(jTextFieldAltaNombre.getText());
         } else {
-            jTextFieldAltaNombre.setBackground(colorError);
+            jTextFieldAltaNombre.setBackground(COLOR_ERROR);
             mensaje.append("\t- El nombre debe tener entre 0 y 100 caracteres.\n");
         }
 
-        if (jTextFieldAltaFecNac.getText().matches(regexFecha)) {
-            jTextFieldAltaFecNac.setBackground(colorPorDefecto);
+        if (jTextFieldAltaFecNac.getText().matches(REGEX_FECHA)) {
+            jTextFieldAltaFecNac.setBackground(COLOR_POR_DEFECTO);
             String fecha = jTextFieldAltaFecNac.getText();
             try {
                 LocalDate ld = LocalDate.of(Integer.parseInt(fecha.substring(0, 4)), Integer.parseInt(fecha.substring(5, 7)), Integer.parseInt(fecha.substring(8, 10)));
                 alumno.setFecNac(ld);
             } catch (DateTimeException e) {
-                jTextFieldAltaFecNac.setBackground(colorError);
+                jTextFieldAltaFecNac.setBackground(COLOR_ERROR);
                 mensaje.append("\t- La fecha presenta incongruencias: ").append(e.getMessage()).append("\n");
             }
         } else {
-            jTextFieldAltaFecNac.setBackground(colorError);
+            jTextFieldAltaFecNac.setBackground(COLOR_ERROR);
             mensaje.append("\t- Solo se admiten fechas con formato yyyy-mm-dd.\n");
         }
 
-        if (jTextFieldAltaNota.getText().matches(regexNota)) {
-            jTextFieldAltaNota.setBackground(colorPorDefecto);
+        if (jTextFieldAltaNota.getText().matches(REGEX_NOTA)) {
+            jTextFieldAltaNota.setBackground(COLOR_POR_DEFECTO);
             alumno.setNota(Float.parseFloat(jTextFieldAltaNota.getText()));
         } else {
-            jTextFieldAltaNota.setBackground(colorError);
+            jTextFieldAltaNota.setBackground(COLOR_ERROR);
             mensaje.append("\t- La nota debe ser un número entre 0 y 10, hasta dos decimales y punto como separación.\n");
         }
 
-        //Si el texto mensaje no a recopilado fallos, la operación habrá sido un éxito,
-        //y por lo tanto el mensaje ahora será de aviso de que se a realizado correctamente.
+        //Si el texto mensaje no ha recopilado fallos, la operación habrá sido un éxito,
+        //y por lo tanto, el mensaje será un aviso indicando que la operación ser ha realizado
         if (mensaje.length() == 0) {
-            mensaje.append("Operación de alta realizada con éxito\n").append(alumno.toString());            
-        }else{
+            mensaje.append("Operación de alta realizada con éxito.\n").append(alumno.toString());
+        } else {
             mensaje.insert(0, "Ocurrieron algunos problemas:\n");
         }
 

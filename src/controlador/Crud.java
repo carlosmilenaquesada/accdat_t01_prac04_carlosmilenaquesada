@@ -6,14 +6,15 @@ import java.time.LocalDate;
 import modelo.Alumno;
 
 public class Crud {
-
+    private String pathArchivo;
     private Conexion conexion = null;
     private RandomAccessFile raf = null;
 
     private final int TAMANIO_REGISTRO = 220;
 
-    public Crud() {
-        this.conexion = new Conexion();
+    private Crud(){}
+    public Crud(String pathArchivo) {
+        this.conexion = new Conexion(pathArchivo);
         this.raf = conexion.getRaf();
     }
 
