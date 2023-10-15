@@ -1,36 +1,34 @@
 package controlador;
 
+import java.io.File;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.time.LocalDate;
 import modelo.Alumno;
 
 public class Crud {
-    private String pathArchivo;
     private Conexion conexion = null;
-    private RandomAccessFile raf = null;
 
     private final int TAMANIO_REGISTRO = 220;
 
     private Crud(){}
-    public Crud(String pathArchivo) {
-        this.conexion = new Conexion(pathArchivo);
-        this.raf = conexion.getRaf();
+    
+    public Crud(File pathFile) {
+        this.conexion = new Conexion(pathFile);
     }
 
     public void alta(Alumno alumno) throws IOException {
         this.situarPunteroEnId(alumno.getNumMatricula());
-        this.raf.writeInt(alumno.getNumMatricula());
-        this.raf.writeChars(alumno.getNombre());
-        this.raf.writeInt(alumno.getFecNac().getYear());
-        this.raf.writeInt(alumno.getFecNac().getMonthValue());
-        this.raf.writeInt(alumno.getFecNac().getDayOfMonth());
-        this.raf.writeFloat(alumno.getNota());
+        this.conexion.getRaf().writeInt(alumno.getNumMatricula());
+        this.conexion.getRaf().writeChars(alumno.getNombre());
+        this.conexion.getRaf().writeInt(alumno.getFecNac().getYear());
+        this.conexion.getRaf().writeInt(alumno.getFecNac().getMonthValue());
+        this.conexion.getRaf().writeInt(alumno.getFecNac().getDayOfMonth());
+        this.conexion.getRaf().writeFloat(alumno.getNota());
     }
 
     public void baja(int numMatricula) throws IOException {
         this.situarPunteroEnId(numMatricula);
-        this.raf.writeInt(0);
+       this.conexion.getRaf().writeInt(0);
     }
 
     public void modificar(Alumno alumno) throws IOException {
@@ -44,25 +42,25 @@ public class Crud {
         Alumno alumno = new Alumno();
         if (this.alumnoExiste(numMatricula)) {
             this.situarPunteroEnId(numMatricula);
-            alumno.setNumMatricula(this.raf.readInt());
+            alumno.setNumMatricula(this.conexion.getRaf().readInt());
             StringBuilder nombre = new StringBuilder();
             for (int i = 0; i < 200; i++) {
-                nombre.append(this.raf.readChar());
+                nombre.append(this.conexion.getRaf().readChar());
             }
             alumno.setNombre(nombre.toString());
-            alumno.setFecNac(LocalDate.of(this.raf.readInt(), this.raf.readInt(), this.raf.readInt()));
-            alumno.setNota(this.raf.readFloat());
+            alumno.setFecNac(LocalDate.of(this.conexion.getRaf().readInt(), this.conexion.getRaf().readInt(), this.conexion.getRaf().readInt()));
+            alumno.setNota(this.conexion.getRaf().readFloat());
         }
         return alumno;
     }
 
     public boolean alumnoExiste(int numMatricula) throws IOException {
         this.situarPunteroEnId(numMatricula);
-        return this.raf.readInt() == numMatricula;
+        return this.conexion.getRaf().readInt() == numMatricula;
     }
 
     private void situarPunteroEnId(int numMatricula) throws IOException {
-        this.raf.seek((numMatricula - 1) * TAMANIO_REGISTRO);
+        this.conexion.getRaf().seek((numMatricula - 1) * TAMANIO_REGISTRO);
     }
 
 }

@@ -2,8 +2,13 @@ package vista;
 
 import controlador.Crud;
 import java.awt.Color;
+import java.io.File;
+import java.io.IOException;
 import java.time.DateTimeException;
 import java.time.LocalDate;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -23,12 +28,12 @@ public class PrincipalJFrame extends javax.swing.JFrame {
 
     //CRUD
     private Crud crud = null;
-
+    
     public PrincipalJFrame() {
         initMenuInicial();
         initComponents();
     }
-
+    
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -88,9 +93,7 @@ public class PrincipalJFrame extends javax.swing.JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Gestión de alumnos");
         setBounds(new java.awt.Rectangle(0, 0, 560, 700));
-        setMaximumSize(new java.awt.Dimension(560, 700));
         setMinimumSize(new java.awt.Dimension(560, 700));
-        setPreferredSize(new java.awt.Dimension(560, 700));
         setSize(new java.awt.Dimension(560, 700));
         getContentPane().setLayout(null);
 
@@ -295,27 +298,56 @@ public class PrincipalJFrame extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void initMenuInicial() {
-        int eleccion = JOptionPane.showOptionDialog(null, "¿Qué desea hacer?", "Menú inicio Base de Datos",
-                JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null,
-                new Object[]{"Abrir Base de Datos existente", "Crear nueva Base de Datos", "Salir del programa"},
-                "Abrir Base de Datos existente");
-
-        if (eleccion == 2 || eleccion == -1) {
-            System.exit(0);
-        }
-
-        JFileChooser jfc = new JFileChooser();
-        jfc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        jfc.setAcceptAllFileFilterUsed(false);
-        jfc.setFileFilter(new FileNameExtensionFilter("Compatibles Random Access File (*.txt; *.text; *.dat)", "txt", "text", "dat"));
-
-        if (eleccion == 0/*Abrir Base de Datos existente*/) {
-            jfc.showOpenDialog(null);
-        } else {
-            if (eleccion == 1/*Crear nueva Base de Datos*/) {
-                jfc.showSaveDialog(null);
+        File pathRafDB = null;
+        
+        do {
+            int opcion = JOptionPane.showOptionDialog(null, "¿Qué desea hacer?", "Menú inicio Base de Datos",
+                    JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null,
+                    new Object[]{"Abrir Base de Datos existente", "Crear nueva Base de Datos", "Salir del programa"},
+                    "Abrir Base de Datos existente");
+            
+            if (opcion == 2 || opcion == -1) {
+                System.exit(0);
             }
-        }
+            
+            JFileChooser jfc = new JFileChooser();
+            jfc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+            jfc.setAcceptAllFileFilterUsed(false);
+            jfc.setFileFilter(new FileNameExtensionFilter("Compatibles Random Access File (*.txt; *.text; *.dat)", "txt", "text", "dat"));
+            
+            if (opcion == 0/*Abrir Base de Datos existente*/) {
+                jfc.showOpenDialog(null);
+                if (jfc.getSelectedFile() != null && jfc.getSelectedFile().exists()) {
+                    pathRafDB = jfc.getSelectedFile();//Solo abrirá bases de datos existentes
+                    System.out.println(pathRafDB);
+                    
+                }
+            } else {
+                if (opcion == 1/*Crear nueva Base de Datos*/) {                    
+                    JCheckBox jcb = new JCheckBox("Guardar como *.txt si no se indica extensión.", true);
+                    jcb.setEnabled(false);
+                    jfc.setAccessory(jcb);
+                    
+                    jfc.showSaveDialog(null);
+                    if (jfc.getSelectedFile() != null) {
+                        pathRafDB = jfc.getSelectedFile();//Si se crea una archivo que ya existe, se abrirá el existente 
+                        if (!jfc.getSelectedFile().exists()) {
+                            try {
+                                String nameFile = pathRafDB.getName();
+                                if (!nameFile.endsWith(".txt") && !nameFile.endsWith(".text") && !nameFile.endsWith(".dat")) {
+                                    pathRafDB = new File(pathRafDB.toPath() + ".txt");
+                                }                                
+                                pathRafDB.createNewFile();//Si no existe, pues se crea nuevo
+                            } catch (IOException ex) {
+                                pathRafDB = null;
+                                JOptionPane.showMessageDialog(null, "No se ha podido crear el archivo, inténtelo de nuevo.");
+                            }
+                        }
+                    }
+                }
+            }
+            
+        } while (pathRafDB == null);
     }
 
     private void jButtonAltaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonAltaActionPerformed
@@ -328,7 +360,7 @@ public class PrincipalJFrame extends javax.swing.JFrame {
             jTextFieldAltaMatricula.setBackground(COLOR_ERROR);
             mensaje.append("\t- El número de matrícula debe ser un número entero de no más de 9 dígitos.\n");
         }
-
+        
         if (jTextFieldAltaNombre.getText().matches(REGEX_NOMBRE)) {
             jTextFieldAltaNombre.setBackground(COLOR_POR_DEFECTO);
             alumno.setNombre(jTextFieldAltaNombre.getText());
@@ -336,7 +368,7 @@ public class PrincipalJFrame extends javax.swing.JFrame {
             jTextFieldAltaNombre.setBackground(COLOR_ERROR);
             mensaje.append("\t- El nombre debe tener entre 0 y 100 caracteres.\n");
         }
-
+        
         if (jTextFieldAltaFecNac.getText().matches(REGEX_FECHA)) {
             jTextFieldAltaFecNac.setBackground(COLOR_POR_DEFECTO);
             String fecha = jTextFieldAltaFecNac.getText();
@@ -351,7 +383,7 @@ public class PrincipalJFrame extends javax.swing.JFrame {
             jTextFieldAltaFecNac.setBackground(COLOR_ERROR);
             mensaje.append("\t- Solo se admiten fechas con formato yyyy-mm-dd.\n");
         }
-
+        
         if (jTextFieldAltaNota.getText().matches(REGEX_NOTA)) {
             jTextFieldAltaNota.setBackground(COLOR_POR_DEFECTO);
             alumno.setNota(Float.parseFloat(jTextFieldAltaNota.getText()));
@@ -367,12 +399,12 @@ public class PrincipalJFrame extends javax.swing.JFrame {
         } else {
             mensaje.insert(0, "Ocurrieron algunos problemas:\n");
         }
-
+        
         JOptionPane.showMessageDialog(null, mensaje);
-
+        
 
     }//GEN-LAST:event_jButtonAltaActionPerformed
-
+    
     public static void main(String args[]) {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
